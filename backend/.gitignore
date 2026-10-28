@@ -36,6 +36,7 @@ env/
 base_vectorial/
 sesiones.db
 chroma_db/
+base_vectorial/
 
 # IDE
 .vscode/
