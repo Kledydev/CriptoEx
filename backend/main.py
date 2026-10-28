@@ -57,6 +57,14 @@ async def chat_with_agent(request: ChatRequest, current_user: dict = Depends(get
         response = agent.run(request.message)
         session_id = request.session_id or datetime.utcnow().isoformat()
         
+        # Manejar diferentes formatos de respuesta de Agno
+        if hasattr(response, 'content'):
+            response_text = response.content
+        elif hasattr(response, 'messages') and response.messages:
+            response_text = response.messages[-1].content if hasattr(response.messages[-1], 'content') else str(response.messages[-1])
+        else:
+            response_text = str(response)
+        
         # Crear sesión si no existe
         if session_id not in sessions_db:
             sessions_db[session_id] = {
@@ -74,18 +82,20 @@ async def chat_with_agent(request: ChatRequest, current_user: dict = Depends(get
         })
         sessions_db[session_id]["messages"].append({
             "role": "assistant",
-            "content": response.content if hasattr(response, 'content') else str(response),
+            "content": response_text,
             "timestamp": datetime.utcnow().isoformat()
         })
         
         return ChatResponse(
-            response=response.content if hasattr(response, 'content') else str(response),
+            response=response_text,
             session_id=session_id,
             timestamp=datetime.utcnow().isoformat()
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        import traceback
+        error_detail = f"{str(e)}\n{traceback.format_exc()}"
+        print(f"ERROR en chat: {error_detail}")
+        raise HTTPException(status_code=500, detail=error_detail)
 # ============================================
 # API Sessions - Listar sesiones
 # ============================================
