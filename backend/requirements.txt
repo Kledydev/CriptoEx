@@ -1,0 +1,11 @@
+agno[os]
+openai
+ddgs
+beautifulsoup4
+chromadb
+fastapi
+uvicorn
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+python-multipart

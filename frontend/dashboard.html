@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CriptoEx - Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>🚀 CriptoEx</h1>
+            <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
+        </header>
+        
+        <div class="main-content">
+            <aside class="sessions-panel">
+                <h2>Sesiones</h2>
+                <button id="newSessionBtn" class="new-session-btn">+ Nueva Sesión</button>
+                <div id="sessionsList" class="sessions-list"></div>
+            </aside>
+            
+            <main class="chat-container">
+                <div id="messages" class="messages"></div>
+                
+                <form id="chatForm" class="chat-form">
+                    <input type="text" id="message" placeholder="Pregunta sobre criptomonedas..." required>
+                    <button type="submit">Enviar</button>
+                </form>
+            </main>
+        </div>
+    </div>
+    
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
