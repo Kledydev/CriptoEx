@@ -1,11 +1,6 @@
-"""
-Módulo del agente CriptoEx
-Usa DeepSeek (OrcaRouter) para chat y Gemini para embeddings
-"""
 from pathlib import Path
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
-from agno.models.google import Gemini
 from agno.tools.duckduckgo import DuckDuckGoTools
 from agno.tools.website import WebsiteTools
 from agno.knowledge.embedder.google import GeminiEmbedder
@@ -14,7 +9,7 @@ from agno.vectordb.chroma import ChromaDb
 from agno.vectordb.search import SearchType
 from config import ORCA_API_KEY, ORCA_BASE_URL, MODEL_ID, GOOGLE_API_KEY, BASE_DIR
 
-# Base de conocimientos con ChromaDB + Gemini Embeddings (GRATIS)
+# Base de conocimientos con ChromaDB + Gemini Embeddings
 knowledge = Knowledge(
     name="Base de conocimiento CriptoEx",
     vector_db=ChromaDb(
@@ -29,14 +24,12 @@ knowledge = Knowledge(
     ),
 )
 
-# Cargar documentos
 knowledge.insert(
     path=str(BASE_DIR / "knowledge"),
     skip_if_exists=True,
 )
 
 def create_cripto_agent() -> Agent:
-    """Crea y retorna el agente CriptoEx"""
     return Agent(
         name="CriptoEx",
         model=OpenAIChat(
