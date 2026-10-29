@@ -2,6 +2,7 @@
 Modelos Pydantic para validación de datos
 """
 from pydantic import BaseModel
+from typing import Optional
 
 class LoginRequest(BaseModel):
     username: str
@@ -13,7 +14,7 @@ class Token(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
-    session_id: str = None
+    session_id: Optional[str] = None  # ← CAMBIO CLAVE: ahora es opcional
 
 class ChatResponse(BaseModel):
     response: str
