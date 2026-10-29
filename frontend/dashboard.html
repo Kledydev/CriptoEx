@@ -1,48 +1,139 @@
-<main class="main-area">
-    <!-- Header -->
-    <div class="top-bar">
-        <div class="top-bar-tabs">
-            <button class="tab active" data-tab="chat">Chat</button>
-            <button class="tab" data-tab="knowledge">Conocimiento</button>
-            <button class="tab" data-tab="sources">Fuentes</button>
-        </div>
-        <div class="top-bar-user">
-            <span class="user-name" id="userName">admin</span>
-            <button id="logoutBtn" class="btn-logout">Salir</button>
-        </div>
-    </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CriptoEx - Dashboard</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-app">
+        <!-- Sidebar izquierdo -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-mark">₿</div>
+                <div class="logo-text">CriptoEx</div>
+            </div>
 
-    <!-- Mensajes -->
-    <div class="messages-area">
-        <div id="messages" class="messages-container">
-            <div class="welcome-state">
-                <h2 class="welcome-title">Bienvenido a CriptoEx</h2>
-                <p class="welcome-subtitle">
-                    Haz una pregunta sobre criptomonedas para comenzar.
-                </p>
-                <div class="suggestions">
-                    <button class="suggestion-chip" data-msg="¿Qué es el bitcoin?">¿Qué es el bitcoin?</button>
-                    <button class="suggestion-chip" data-msg="Precio actual de Ethereum">Precio de Ethereum</button>
-                    <button class="suggestion-chip" data-msg="¿Qué es DeFi?">¿Qué es DeFi?</button>
+            <button id="newSessionBtn" class="btn-new-session">
+                + Nueva sesión
+            </button>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Hoy</div>
+                <div id="sessionsList">
+                    <div class="sidebar-item"><span>No hay sesiones aún</span></div>
                 </div>
             </div>
-        </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Colecciones</div>
+                <div class="sidebar-item" data-collection="Bitcoin">
+                    <div class="sidebar-item-left">
+                        <span class="collection-dot bitcoin"></span>
+                        <span>Bitcoin</span>
+                    </div>
+                    <span class="sidebar-count">0</span>
+                </div>
+                <div class="sidebar-item" data-collection="Ethereum">
+                    <div class="sidebar-item-left">
+                        <span class="collection-dot ethereum"></span>
+                        <span>Ethereum</span>
+                    </div>
+                    <span class="sidebar-count">0</span>
+                </div>
+                <div class="sidebar-item" data-collection="DeFi">
+                    <div class="sidebar-item-left">
+                        <span class="collection-dot defi"></span>
+                        <span>DeFi</span>
+                    </div>
+                    <span class="sidebar-count">0</span>
+                </div>
+                <div class="sidebar-item" data-collection="Trading">
+                    <div class="sidebar-item-left">
+                        <span class="collection-dot trading"></span>
+                        <span>Trading</span>
+                    </div>
+                    <span class="sidebar-count">0</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Fuentes</div>
+                <div class="sidebar-item">
+                    <div class="sidebar-item-left">
+                        <span class="source-dot cmc"></span>
+                        <span>CoinMarketCap</span>
+                    </div>
+                </div>
+                <div class="sidebar-item">
+                    <div class="sidebar-item-left">
+                        <span class="source-dot cg"></span>
+                        <span>CoinGecko</span>
+                    </div>
+                </div>
+                <div class="sidebar-item">
+                    <div class="sidebar-item-left">
+                        <span class="source-dot local"></span>
+                        <span>Base local</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Área principal -->
+        <main class="main-area">
+            <!-- Header -->
+            <div class="top-bar">
+                <div class="top-bar-tabs">
+                    <button class="tab active" data-tab="chat">Chat</button>
+                    <button class="tab" data-tab="knowledge">Conocimiento</button>
+                    <button class="tab" data-tab="sources">Fuentes</button>
+                </div>
+                <div class="top-bar-user">
+                    <span class="user-name" id="userName">admin</span>
+                    <button id="logoutBtn" class="btn-logout">Salir</button>
+                </div>
+            </div>
+
+            <!-- Mensajes (ahora ocupa todo el espacio) -->
+            <div class="messages-area">
+                <div id="messages" class="messages-container">
+                    <div class="welcome-state">
+                        <h2 class="welcome-title">Bienvenido a CriptoEx</h2>
+                        <p class="welcome-subtitle">
+                            Haz una pregunta sobre criptomonedas para comenzar.
+                            Tu agente buscará en la web y en su base de conocimientos.
+                        </p>
+                        <div class="suggestions">
+                            <button class="suggestion-chip" data-msg="¿Qué es el bitcoin?">¿Qué es el bitcoin?</button>
+                            <button class="suggestion-chip" data-msg="Precio actual de Ethereum">Precio de Ethereum</button>
+                            <button class="suggestion-chip" data-msg="¿Qué es DeFi?">¿Qué es DeFi?</button>
+                            <button class="suggestion-chip" data-msg="Noticias recientes sobre crypto">Noticias crypto</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Búsqueda al fondo (estilo ChatGPT) -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <span class="search-icon"></span>
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Pregunta sobre criptomonedas..."
+                        autocomplete="off"
+                    >
+                    <button id="sendBtn" class="btn-send">Enviar</button>
+                </div>
+                <p class="search-hint">
+                    Prueba: "¿Qué es el halving de Bitcoin?" o "Precio actual de Ethereum"
+                </p>
+            </div>
+        </main>
     </div>
 
-    <!-- Búsqueda abajo -->
-    <div class="search-section">
-        <div class="search-bar">
-            <span class="search-icon">🔍</span>
-            <input 
-                type="text" 
-                id="searchInput" 
-                placeholder="Pregunta sobre criptomonedas..."
-                autocomplete="off"
-            >
-            <button id="sendBtn" class="btn-send">Enviar</button>
-        </div>
-        <p class="search-hint">
-            Prueba: "¿Qué es el halving de Bitcoin?" o "Precio actual de Ethereum"
-        </p>
-    </div>
-</main>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

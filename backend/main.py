@@ -1,12 +1,13 @@
 """
 CriptoEx - Agente de IA especializado en criptomonedas
-Backend con FastAPI + Agno + DeepSeek (vía OrcaRouter)
+Backend con FastAPI + Agno 
 """
 from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from datetime import datetime
+from pathlib import Path
 import json
 import os
 
@@ -28,18 +29,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Montar archivos estáticos (frontend)
+# Montar archivos estáticos
 app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
-# Almacenamiento en memoria para sesiones
-sessions_db = {}
+# ============================================
+# PERSISTENCIA DE SESIONES EN JSON
+# ============================================
+SESSIONS_FILE = BASE_DIR / "sessions.json"
+
+def load_sessions():
+    """Carga las sesiones desde el archivo JSON"""
+    if SESSIONS_FILE.exists():
+        try:
+            with open(SESSIONS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error cargando sesiones: {e}")
+    return {}
+
+def save_sessions(sessions):
+    """Guarda las sesiones en el archivo JSON"""
+    try:
+        with open(SESSIONS_FILE, "w", encoding="utf-8") as f:
+            json.dump(sessions, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error guardando sesiones: {e}")
+
+# Cargar sesiones al iniciar
+sessions_db = load_sessions()
+print(f"Sesiones cargadas: {len(sessions_db)}")
 
 # ============================================
 # API Auth - Login
 # ============================================
 @app.post("/api/auth/login", response_model=Token)
 async def login(request: LoginRequest):
-    """Autentica al usuario y retorna un token JWT"""
     user = authenticate_user(request.username, request.password)
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
@@ -47,21 +71,21 @@ async def login(request: LoginRequest):
     return {"access_token": access_token, "token_type": "bearer"}
 
 # ============================================
-# API Agents - Chat con el agente
+# API Agents - Chat
 # ============================================
 @app.post("/api/agents/chat", response_model=ChatResponse)
 async def chat_with_agent(request: ChatRequest, current_user: dict = Depends(get_current_user)):
-    """Envía un mensaje al agente CriptoEx y retorna la respuesta"""
     try:
         agent = create_cripto_agent()
         response = agent.run(request.message)
         session_id = request.session_id or datetime.utcnow().isoformat()
         
-        # Manejar diferentes formatos de respuesta de Agno
+        response_text = ""
         if hasattr(response, 'content'):
             response_text = response.content
         elif hasattr(response, 'messages') and response.messages:
-            response_text = response.messages[-1].content if hasattr(response.messages[-1], 'content') else str(response.messages[-1])
+            last_msg = response.messages[-1]
+            response_text = last_msg.content if hasattr(last_msg, 'content') else str(last_msg)
         else:
             response_text = str(response)
         
@@ -86,6 +110,13 @@ async def chat_with_agent(request: ChatRequest, current_user: dict = Depends(get
             "timestamp": datetime.utcnow().isoformat()
         })
         
+        # ACTUALIZAR título con la primera pregunta
+        if len(sessions_db[session_id]["messages"]) == 2:
+            sessions_db[session_id]["title"] = request.message[:50]
+        
+        # GUARDAR EN DISCO
+        save_sessions(sessions_db)
+        
         return ChatResponse(
             response=response_text,
             session_id=session_id,
@@ -96,30 +127,54 @@ async def chat_with_agent(request: ChatRequest, current_user: dict = Depends(get
         error_detail = f"{str(e)}\n{traceback.format_exc()}"
         print(f"ERROR en chat: {error_detail}")
         raise HTTPException(status_code=500, detail=error_detail)
+
 # ============================================
-# API Sessions - Listar sesiones
+# API Sessions - Listar
 # ============================================
 @app.get("/api/sessions")
 async def list_sessions(current_user: dict = Depends(get_current_user)):
-    """Lista todas las sesiones del usuario"""
-    return list(sessions_db.values())
+    # Ordenar por fecha de creación (más reciente primero)
+    sorted_sessions = sorted(
+        sessions_db.values(),
+        key=lambda x: x.get("created_at", ""),
+        reverse=True
+    )
+    return sorted_sessions
 
 # ============================================
-# API Sessions - Obtener sesión específica
+# API Sessions - Obtener una
 # ============================================
 @app.get("/api/sessions/{session_id}")
 async def get_session(session_id: str, current_user: dict = Depends(get_current_user)):
-    """Obtiene los mensajes de una sesión específica"""
     if session_id not in sessions_db:
         raise HTTPException(status_code=404, detail="Sesión no encontrada")
     return sessions_db[session_id]
 
 # ============================================
-# WebSocket - Manejo de eventos en tiempo real
+# API Sessions - Eliminar
+# ============================================
+@app.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str, current_user: dict = Depends(get_current_user)):
+    if session_id not in sessions_db:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+    del sessions_db[session_id]
+    save_sessions(sessions_db)
+    return {"message": "Sesión eliminada", "session_id": session_id}
+
+# ============================================
+# API Sessions - Limpiar todas
+# ============================================
+@app.delete("/api/sessions")
+async def clear_sessions(current_user: dict = Depends(get_current_user)):
+    sessions_db.clear()
+    save_sessions(sessions_db)
+    return {"message": "Todas las sesiones eliminadas"}
+
+# ============================================
+# WebSocket - Eventos en tiempo real
 # ============================================
 @app.websocket("/ws/events/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
-    """WebSocket para eventos en tiempo real"""
     await websocket.accept()
     try:
         agent = create_cripto_agent()
@@ -127,16 +182,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             data = await websocket.receive_text()
             message = json.loads(data)
             
-            # Evento: procesando
             await websocket.send_json({
                 "type": "status",
                 "content": "Procesando..."
             })
             
-            # Procesar mensaje
             response = agent.run(message.get("message", ""))
             
-            # Evento: respuesta
             await websocket.send_json({
                 "type": "response",
                 "content": response.content if hasattr(response, 'content') else str(response),
@@ -150,25 +202,13 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 # ============================================
 @app.get("/", response_class=HTMLResponse)
 async def serve_login():
-    """Sirve la página de login"""
     with open("../frontend/login.html", "r") as f:
         return f.read()
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def serve_dashboard():
-    """Sirve el dashboard"""
     with open("../frontend/dashboard.html", "r") as f:
         return f.read()
-
-# ==============================================
-# API Sessions - Eliminar sesión
-@app.delete("/api/sessions/{session_id}")
-async def delete_session(session_id: str, current_user: dict = Depends(get_current_user)):
-    """Elimina una sesión específica"""
-    if session_id not in sessions_db:
-        raise HTTPException(status_code=404, detail="Sesión no encontrada")
-    del sessions_db[session_id]
-    return {"message": "Sesión eliminada", "session_id": session_id}
 
 # ============================================
 # Punto de entrada

@@ -1,0 +1,19 @@
+{
+  "2026-10-29T01:15:10.116976": {
+    "id": "2026-10-29T01:15:10.116976",
+    "title": "¿Qué es el bitcoin?",
+    "created_at": "2026-10-29T01:15:10.117002",
+    "messages": [
+      {
+        "role": "user",
+        "content": "¿Qué es el bitcoin?",
+        "timestamp": "2026-10-29T01:15:10.117009"
+      },
+      {
+        "role": "assistant",
+        "content": "¡Hola! Soy **CriptoEx**, tu especialista en criptomonedas y tecnología blockchain. A continuación, te explico qué es **Bitcoin** de forma clara y sencilla:\n\n---\n\n### ¿Qué es Bitcoin (BTC)?\n\n**Bitcoin** es la primera criptomoneda descentralizada del mundo, creada en **2009** por una persona o grupo anónimo bajo el seudónimo de **Satoshi Nakamoto**. \n\nA diferencia de las monedas tradicionales (como el dólar o el euro) emitidas por bancos centrales, Bitcoin opera sobre una red digital de pares (*peer-to-peer*) sin intermediarios ni autoridades centrales.\n\n---\n\n### Características y funcionamiento clave\n\n1. **Tecnología Blockchain (Cadena de bloques):**  \n   Bitcoin utiliza un libro contable público, distribuido e inmutable. Cada transacción queda registrada en la *blockchain*, lo que garantiza la transparencia y evita que un mismo bitcoin pueda gastarse dos veces.\n\n2. **Mecanismo de consenso (Proof-of-Work):**  \n   La red de Bitcoin se asegura mediante la *Prueba de Trabajo* (Proof-of-Work). Los nodos de la red (\"mineros\") compiten resolviendo complejos problemas matemáticos para validar las transacciones e incluirlas en nuevos bloques.\n\n3. **Suministro limitado (21 millones):**  \n   A diferencia del dinero fiduciario, cuya emisión es ilimitada, solo existirán **21 millones de bitcoins** en total. Esta escasez programada se refuerza mediante el evento conocido como *Halving*, que reduce a la mitad la recompensa de los mineros aproximadamente cada 4 años.\n\n4. **Descentralización y custodia personal:**  \n   Los usuarios almacenan sus bitcoins en monederos digitales (*wallets*) mediante claves criptográficas públicas y privadas, manteniendo el control total sobre sus fondos.\n\n---\n\n### Datos del mercado actual\n\nActualmente, la cotización de Bitcoin se sitúa en torno a los **$81,000 USD** (~72,300 EUR), consolidándose como la criptomoneda de mayor capitalización de mercado a nivel global.\n\n---\n\n### Fuentes consultadas\n- [Bitcoin.org](https://bitcoin.org)\n- [CoinMarketCap - Bitcoin](https://coinmarketcap.com/es/currencies/bitcoin/)\n- [Binance - Precio de Bitcoin](https://www.binance.com/es/price/bitcoin)\n\n---\n\n*Aviso: La información proporcionada es exclusivamente con fines educativos y de divulgación general. No constituye asesoramiento de inversión ni recomendación financiera.*",
+        "timestamp": "2026-10-29T01:15:10.117016"
+      }
+    ]
+  }
+}
