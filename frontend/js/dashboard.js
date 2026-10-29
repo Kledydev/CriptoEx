@@ -267,15 +267,105 @@ async function loadKnowledgeView() {
     }
 }
 
-// Placeholder para el Paso 4
-function loadSourcesView() {
+// ========================================
+// VISTA: FUENTES CONSULTADAS
+// ========================================
+async function loadSourcesView() {
     const messagesDiv = document.getElementById('messages');
     messagesDiv.innerHTML = `
-        <div class="empty-view">
-            <h2 class="view-title">Fuentes consultadas</h2>
-            <p class="view-subtitle">Disponible en el próximo paso.</p>
+        <div class="loading-indicator">
+            <div class="loading-dots"><span></span><span></span><span></span></div>
+            <span>Cargando fuentes consultadas...</span>
         </div>
     `;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/sources', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar fuentes');
+        }
+        
+        const data = await response.json();
+        
+        if (data.sources.length === 0) {
+            messagesDiv.innerHTML = `
+                <div class="empty-view">
+                    <h2 class="view-title">Sin fuentes aún</h2>
+                    <p class="view-subtitle">
+                        Cuando el agente consulte páginas web o incluya enlaces
+                        en sus respuestas, aparecerán aquí.
+                    </p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Resumen de dominios
+        const domainChips = Object.entries(data.domains)
+            .sort((a, b) => b[1] - a[1])
+            .map(([domain, count]) => `
+                <span class="domain-chip">
+                    <span class="domain-name">${domain}</span>
+                    <span class="domain-count">${count}</span>
+                </span>
+            `).join('');
+        
+        // Lista de fuentes
+        const sourceCards = data.sources.map(source => `
+            <div class="source-card">
+                <div class="source-card-header">
+                    <span class="source-domain">${source.domain}</span>
+                    <span class="source-time">${formatTimestamp(source.timestamp)}</span>
+                </div>
+                <a href="${source.url}" target="_blank" rel="noopener noreferrer" class="source-url">
+                    ${source.url}
+                </a>
+                <p class="source-session">Sesión: ${source.session_title}</p>
+            </div>
+        `).join('');
+        
+        messagesDiv.innerHTML = `
+            <div class="sources-view">
+                <div class="view-header">
+                    <h2 class="view-title">Fuentes consultadas</h2>
+                    <p class="view-subtitle">
+                        ${data.total_sources} enlaces extraídos de las respuestas del agente
+                    </p>
+                </div>
+                <div class="domain-summary">
+                    ${domainChips}
+                </div>
+                <div class="sources-list-grid">
+                    ${sourceCards}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error cargando fuentes:', error);
+        messagesDiv.innerHTML = `
+            <div class="error-bubble">No se pudieron cargar las fuentes.</div>
+        `;
+    }
+}
+
+// Formatear timestamp para mostrar
+function formatTimestamp(timestamp) {
+    if (!timestamp) return '';
+    try {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return '';
+    }
 }
 
 function attachSuggestionListeners() {

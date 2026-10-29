@@ -213,6 +213,60 @@ async def get_knowledge(current_user: dict = Depends(get_current_user)):
         "source": "knowledge/crypto_knowledge.md",
         "vector_collection": "criptoex_knowledge"
     }
+
+# ============================================
+# API Sources - Fuentes consultadas
+# ============================================
+@app.get("/api/sources")
+async def get_sources(current_user: dict = Depends(get_current_user)):
+    """Extrae las URLs consultadas por el agente en todas las sesiones"""
+    import re
+    from urllib.parse import urlparse
+    
+    url_pattern = re.compile(r'https?://[^\s<>\)\]]+')
+    sources = []
+    domains = {}
+    
+    for session_id, session in sessions_db.items():
+        for message in session.get("messages", []):
+            if message.get("role") != "assistant":
+                continue
+            
+            content = message.get("content", "")
+            urls = url_pattern.findall(content)
+            
+            for url in urls:
+                # Limpiar caracteres sobrantes al final
+                url = url.rstrip('.,;:)"\'')
+                
+                try:
+                    parsed = urlparse(url)
+                    domain = parsed.netloc.replace("www.", "")
+                except Exception:
+                    domain = "desconocido"
+                
+                # Evitar duplicados exactos
+                if not any(s["url"] == url for s in sources):
+                    sources.append({
+                        "url": url,
+                        "domain": domain,
+                        "session_id": session_id,
+                        "session_title": session.get("title", "Sin título"),
+                        "timestamp": message.get("timestamp", "")
+                    })
+                
+                # Contar por dominio
+                domains[domain] = domains.get(domain, 0) + 1
+    
+    # Ordenar por más recientes
+    sources.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+    
+    return {
+        "sources": sources,
+        "total_sources": len(sources),
+        "domains": domains
+    }
+
 # ============================================
 # WebSocket - Eventos en tiempo real
 # ============================================

@@ -587,6 +587,110 @@ body.dashboard-body {
     text-align: center;
     padding: 4rem 1rem;
 }
+
+/* ========================================
+   VISTA: FUENTES CONSULTADAS
+   ======================================== */
+.sources-view {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.domain-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+.domain-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    border: 1px solid #e8e8e3;
+    border-radius: 100px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+}
+
+.domain-name {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.domain-count {
+    background: #b8e986;
+    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 100px;
+}
+
+.sources-list-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1rem;
+}
+
+.source-card {
+    background: white;
+    border: 1px solid #e8e8e3;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: all 0.2s;
+}
+
+.source-card:hover {
+    border-color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.source-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.source-domain {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: #f0f0ec;
+    color: #444;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+}
+
+.source-time {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.source-url {
+    font-size: 0.9rem;
+    color: #3b82f6;
+    text-decoration: none;
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+.source-url:hover {
+    text-decoration: underline;
+}
+
+.source-session {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0;
+}
+
 /* ========================================
    RESPONSIVE
    ======================================== */
