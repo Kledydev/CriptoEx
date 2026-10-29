@@ -32,6 +32,15 @@ let currentSessionId = null;
 let activeCollection = null;
 let collectionsData = [];
 let isProcessing = false;
+let activeSource = null;
+let sourceStatsData = [];
+
+const SOURCE_DESCRIPTIONS = {
+    'CoinMarketCap': 'Precios, capitalización y volumen de mercado en tiempo real.',
+    'CoinGecko': 'Métricas de mercado, seguimiento de monedas y tendencias globales.',
+    'Base local': 'Documentos indexados en ChromaDB (knowledge/crypto_knowledge.md).'
+};
+
 
 // Autenticación
 if (!token) {
@@ -54,6 +63,8 @@ function init() {
     loadSessions();
     loadCollections();
     attachSuggestionListeners();
+    setupSources();
+    loadSourceStats();
 }
 
 // ========================================
@@ -170,6 +181,7 @@ async function sendMessage() {
             appendMessage('assistant', data.response);
             loadSessions();
             loadCollections();
+            loadSourceStats(); // Actualiza estadísticas despues de cada mensaje
         } else {
             let errorMessage = 'No se pudo obtener respuesta';
             try {
@@ -255,6 +267,9 @@ function setupCollections() {
             collectionItem.classList.add('active');
             loadSessions();
             renderCollectionView(name);
+            activeSource = null;
+            document.querySelectorAll('.sidebar-item[data-source]')
+                .forEach(i => i.classList.remove('active'));
         }
     });
 }
@@ -328,11 +343,17 @@ async function loadSessions() {
         if (!sessionsList) return;
 
         // Filtrar por colección activa
+                // Filtrar por colección o fuente activa
         let filteredSessions = sessions;
         if (activeCollection) {
             const collection = collectionsData.find(c => c.name === activeCollection);
             if (collection) {
                 filteredSessions = sessions.filter(s => collection.session_ids.includes(s.id));
+            }
+        } else if (activeSource) {
+            const source = sourceStatsData.find(s => s.name === activeSource);
+            if (source) {
+                filteredSessions = sessions.filter(s => source.session_ids.includes(s.id));
             }
         }
 
@@ -681,4 +702,81 @@ function formatContent(content) {
     content = content.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank">$1</a>');
     content = content.replace(/\n/g, '<br>');
     return content;
+}
+
+// ========================================
+// FUENTES (sidebar)
+// ========================================
+function setupSources() {
+    document.addEventListener('click', (e) => {
+        const sourceItem = e.target.closest('.sidebar-item[data-source]');
+        if (!sourceItem) return;
+        
+        const name = sourceItem.dataset.source;
+        console.log('Fuente clickeada:', name);
+        
+        if (activeSource === name) {
+            // Desactivar filtro
+            activeSource = null;
+            sourceItem.classList.remove('active');
+            loadSessions();
+            switchView('chat');
+        } else {
+            // Activar filtro (desactiva colecciones también)
+            activeSource = name;
+            activeCollection = null;
+            document.querySelectorAll('.sidebar-item[data-source], .sidebar-item[data-collection]')
+                .forEach(i => i.classList.remove('active'));
+            sourceItem.classList.add('active');
+            loadSessions();
+            renderSourceView(name);
+        }
+    });
+}
+
+async function loadSourceStats() {
+    try {
+        const response = await fetch('/api/source_stats', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            sourceStatsData = data.sources;
+            
+            sourceStatsData.forEach(source => {
+                const countEl = document.querySelector(
+                    `.sidebar-item[data-source="${source.name}"] .sidebar-count`
+                );
+                if (countEl) countEl.textContent = source.count;
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando estadísticas de fuentes:', error);
+    }
+}
+
+function renderSourceView(name) {
+    const messagesDiv = document.getElementById('messages');
+    const source = sourceStatsData.find(s => s.name === name);
+    const count = source ? source.count : 0;
+    const description = SOURCE_DESCRIPTIONS[name] || '';
+    
+    document.querySelector('.search-section').style.display = 'none';
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    
+    messagesDiv.innerHTML = `
+        <div class="collection-view">
+            <div class="view-header">
+                <h2 class="view-title">Fuente: ${name}</h2>
+                <p class="view-subtitle">
+                    ${count} ${count === 1 ? 'sesión usó esta fuente' : 'sesiones usaron esta fuente'}
+                </p>
+            </div>
+            <p class="collection-hint">${description}</p>
+            <p class="collection-hint">
+                Selecciona una sesión del panel izquierdo para ver cómo se usó esta fuente.
+            </p>
+        </div>
+    `;
 }

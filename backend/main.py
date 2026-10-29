@@ -305,6 +305,62 @@ async def get_collections(current_user: dict = Depends(get_current_user)):
     return {"collections": result}
 
 # ============================================
+# API Source Stats - Uso de fuentes por sesión
+# ============================================
+SOURCE_FILTERS = {
+    "CoinMarketCap": ["coinmarketcap.com"],
+    "CoinGecko": ["coingecko.com"],
+}
+
+@app.get("/api/source_stats")
+async def get_source_stats(current_user: dict = Depends(get_current_user)):
+    """Determina qué sesiones usaron cada fuente de información"""
+    import re
+    url_pattern = re.compile(r'https?://[^\s<>\)\]]+')
+    
+    stats = []
+    
+    # Fuentes web externas
+    for name, domains in SOURCE_FILTERS.items():
+        session_ids = []
+        for session_id, session in sessions_db.items():
+            for message in session.get("messages", []):
+                if message.get("role") != "assistant":
+                    continue
+                content = message.get("content", "").lower()
+                if any(domain in content for domain in domains):
+                    if session_id not in session_ids:
+                        session_ids.append(session_id)
+                    break
+        stats.append({
+            "name": name,
+            "count": len(session_ids),
+            "session_ids": session_ids
+        })
+    
+    # Base local: respuestas sin URLs externas
+    local_ids = []
+    for session_id, session in sessions_db.items():
+        has_assistant = False
+        has_url = False
+        for message in session.get("messages", []):
+            if message.get("role") != "assistant":
+                continue
+            has_assistant = True
+            if url_pattern.search(message.get("content", "")):
+                has_url = True
+        if has_assistant and not has_url:
+            local_ids.append(session_id)
+    
+    stats.append({
+        "name": "Base local",
+        "count": len(local_ids),
+        "session_ids": local_ids
+    })
+    
+    return {"sources": stats}
+
+# ============================================
 # WebSocket - Eventos en tiempo real
 # ============================================
 @app.websocket("/ws/events/{session_id}")
