@@ -1,36 +1,48 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CriptoEx - Dashboard</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-</head>
-<body>
-    <div class="dashboard-container">
-        <header>
-            <h1>🚀 CriptoEx</h1>
-            <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
-        </header>
-        
-        <div class="main-content">
-            <aside class="sessions-panel">
-                <h2>Sesiones</h2>
-                <button id="newSessionBtn" class="new-session-btn">+ Nueva Sesión</button>
-                <div id="sessionsList" class="sessions-list"></div>
-            </aside>
-            
-            <main class="chat-container">
-                <div id="messages" class="messages"></div>
-                
-                <form id="chatForm" class="chat-form">
-                    <input type="text" id="message" placeholder="Pregunta sobre criptomonedas..." required>
-                    <button type="submit">Enviar</button>
-                </form>
-            </main>
+<main class="main-area">
+    <!-- Header -->
+    <div class="top-bar">
+        <div class="top-bar-tabs">
+            <button class="tab active" data-tab="chat">Chat</button>
+            <button class="tab" data-tab="knowledge">Conocimiento</button>
+            <button class="tab" data-tab="sources">Fuentes</button>
+        </div>
+        <div class="top-bar-user">
+            <span class="user-name" id="userName">admin</span>
+            <button id="logoutBtn" class="btn-logout">Salir</button>
         </div>
     </div>
-    
-    <script src="/static/js/dashboard.js"></script>
-</body>
-</html>
+
+    <!-- Mensajes -->
+    <div class="messages-area">
+        <div id="messages" class="messages-container">
+            <div class="welcome-state">
+                <h2 class="welcome-title">Bienvenido a CriptoEx</h2>
+                <p class="welcome-subtitle">
+                    Haz una pregunta sobre criptomonedas para comenzar.
+                </p>
+                <div class="suggestions">
+                    <button class="suggestion-chip" data-msg="¿Qué es el bitcoin?">¿Qué es el bitcoin?</button>
+                    <button class="suggestion-chip" data-msg="Precio actual de Ethereum">Precio de Ethereum</button>
+                    <button class="suggestion-chip" data-msg="¿Qué es DeFi?">¿Qué es DeFi?</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Búsqueda abajo -->
+    <div class="search-section">
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Pregunta sobre criptomonedas..."
+                autocomplete="off"
+            >
+            <button id="sendBtn" class="btn-send">Enviar</button>
+        </div>
+        <p class="search-hint">
+            Prueba: "¿Qué es el halving de Bitcoin?" o "Precio actual de Ethereum"
+        </p>
+    </div>
+</main>
