@@ -268,6 +268,43 @@ async def get_sources(current_user: dict = Depends(get_current_user)):
     }
 
 # ============================================
+# API Collections - Agrupación por tema
+# ============================================
+COLLECTIONS = {
+    "Bitcoin": ["bitcoin", "btc", "satoshi", "halving"],
+    "Ethereum": ["ethereum", "eth ", "vitalik", "smart contract"],
+    "DeFi": ["defi", "finanzas descentralizadas", "uniswap", "aave", "liquidez"],
+    "Trading": ["trading", "precio", "cotización", "trade", "mercado"]
+}
+
+@app.get("/api/collections")
+async def get_collections(current_user: dict = Depends(get_current_user)):
+    """Cuenta cuántas sesiones pertenecen a cada colección por palabras clave"""
+    result = []
+    
+    for name, keywords in COLLECTIONS.items():
+        session_ids = []
+        
+        for session_id, session in sessions_db.items():
+            # Concatenar título y contenido de mensajes para buscar
+            text = session.get("title", "").lower()
+            text += " " + " ".join(
+                m.get("content", "").lower()
+                for m in session.get("messages", [])
+            )
+            
+            if any(keyword in text for keyword in keywords):
+                session_ids.append(session_id)
+        
+        result.append({
+            "name": name,
+            "count": len(session_ids),
+            "session_ids": session_ids
+        })
+    
+    return {"collections": result}
+
+# ============================================
 # WebSocket - Eventos en tiempo real
 # ============================================
 @app.websocket("/ws/events/{session_id}")

@@ -692,6 +692,26 @@ body.dashboard-body {
 }
 
 /* ========================================
+   VISTA: COLECCIÓN
+   ======================================== */
+.collection-view {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    padding-top: 2rem;
+}
+
+.collection-hint {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.sidebar-item[data-collection] {
+    user-select: none;
+}
+
+/* ========================================
    RESPONSIVE
    ======================================== */
 @media (max-width: 900px) {
