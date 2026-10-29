@@ -160,6 +160,16 @@ async def serve_dashboard():
     with open("../frontend/dashboard.html", "r") as f:
         return f.read()
 
+# ==============================================
+# API Sessions - Eliminar sesión
+@app.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str, current_user: dict = Depends(get_current_user)):
+    """Elimina una sesión específica"""
+    if session_id not in sessions_db:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+    del sessions_db[session_id]
+    return {"message": "Sesión eliminada", "session_id": session_id}
+
 # ============================================
 # Punto de entrada
 # ============================================

@@ -343,6 +343,23 @@ body.dashboard-body {
     padding-left: 0.25rem;
 }
 
+.delete-session-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 0.9rem;
+}
+
+.sidebar-item:hover .delete-session-btn {
+    opacity: 1;
+}
+
+.delete-session-btn:hover {
+    transform: scale(1.2);
+}
+
 /* ========================================
    ÁREA DE MENSAJES
    ======================================== */

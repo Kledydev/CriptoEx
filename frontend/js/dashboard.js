@@ -333,3 +333,70 @@ async function loadSessionMessages(sessionId) {
         console.error('Error cargando mensajes:', error);
     }
 }
+
+// En loadSessions(), agrega botón de eliminar:
+sessionsList.innerHTML = sessions.map(session => `
+    <div class="sidebar-item ${session.id === currentSessionId ? 'active' : ''}" 
+         data-id="${session.id}">
+        <span>${session.title || 'Sin título'}</span>
+        <button class="delete-session-btn" data-id="${session.id}" title="Eliminar">🗑️</button>
+    </div>
+`).join('');
+
+// Event listener para eliminar:
+document.querySelectorAll('.delete-session-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const sessionId = btn.dataset.id;
+        if (confirm('¿Eliminar esta sesión?')) {
+            await deleteSession(sessionId);
+        }
+    });
+});
+
+async function deleteSession(sessionId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/sessions/${sessionId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            if (currentSessionId === sessionId) {
+                currentSessionId = null;
+                document.getElementById('messages').innerHTML = getWelcomeHTML();
+                attachSuggestionListeners();
+            }
+            loadSessions();
+        }
+    } catch (error) {
+        console.error('Error eliminando sesión:', error);
+    }
+}
+
+// En setupEventListeners():
+document.querySelectorAll('.sidebar-item .collection-dot').forEach(dot => {
+    dot.parentElement.addEventListener('click', () => {
+        const collection = dot.nextElementSibling.textContent;
+        filterByCollection(collection);
+    });
+});
+
+function filterByCollection(collection) {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = `
+        <div class="welcome-state">
+            <h2 class="welcome-title">Colección: ${collection}</h2>
+            <p class="welcome-subtitle">
+                Preguntas sobre ${collection}. Tu agente buscará información específica.
+            </p>
+            <div class="suggestions">
+                <button class="suggestion-chip" data-msg="¿Qué es ${collection}?">¿Qué es ${collection}?</button>
+                <button class="suggestion-chip" data-msg="Noticias sobre ${collection}">Noticias</button>
+                <button class="suggestion-chip" data-msg="Precio actual de ${collection}">Precio actual</button>
+            </div>
+        </div>
+    `;
+    attachSuggestionListeners();
+}
