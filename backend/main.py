@@ -171,6 +171,49 @@ async def clear_sessions(current_user: dict = Depends(get_current_user)):
     return {"message": "Todas las sesiones eliminadas"}
 
 # ============================================
+# API Knowledge - Base de conocimientos
+# ============================================
+@app.get("/api/knowledge")
+async def get_knowledge(current_user: dict = Depends(get_current_user)):
+    """Devuelve las secciones indexadas en la base de conocimientos"""
+    knowledge_file = BASE_DIR / "knowledge" / "crypto_knowledge.md"
+    
+    if not knowledge_file.exists():
+        return {
+            "sections": [],
+            "total_sections": 0,
+            "source": "knowledge/crypto_knowledge.md",
+            "vector_collection": "criptoex_knowledge"
+        }
+    
+    content = knowledge_file.read_text(encoding="utf-8")
+    sections = []
+    current_section = None
+    
+    for line in content.split("\n"):
+        if line.startswith("## "):
+            if current_section:
+                sections.append(current_section)
+            current_section = {"title": line[3:].strip(), "content": []}
+        elif line.startswith("# "):
+            continue
+        elif current_section is not None and line.strip():
+            clean_line = line.strip().lstrip("- ").strip()
+            current_section["content"].append(clean_line)
+    
+    if current_section:
+        sections.append(current_section)
+    
+    for section in sections:
+        section["content"] = "\n".join(section["content"])
+    
+    return {
+        "sections": sections,
+        "total_sections": len(sections),
+        "source": "knowledge/crypto_knowledge.md",
+        "vector_collection": "criptoex_knowledge"
+    }
+# ============================================
 # WebSocket - Eventos en tiempo real
 # ============================================
 @app.websocket("/ws/events/{session_id}")

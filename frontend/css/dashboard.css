@@ -513,6 +513,80 @@ body.dashboard-body {
 .delete-session-btn svg {
     display: block;
 }
+
+/* ========================================
+   VISTA: BASE DE CONOCIMIENTOS
+   ======================================== */
+.knowledge-view,
+.empty-view {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.view-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e8e8e3;
+}
+
+.view-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+
+.view-subtitle {
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.view-subtitle code {
+    background: #f0f0ec;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1rem;
+}
+
+.knowledge-card {
+    background: white;
+    border: 1px solid #e8e8e3;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+}
+
+.knowledge-card:hover {
+    border-color: #1a1a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.knowledge-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #b8e986;
+    display: inline-block;
+}
+
+.knowledge-card-content {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+.empty-view {
+    text-align: center;
+    padding: 4rem 1rem;
+}
 /* ========================================
    RESPONSIVE
    ======================================== */

@@ -26,7 +26,8 @@ let currentSessionId = null;
 let isProcessing = false;
 
 function setupEventListeners() {
-    console.log('✅ Dashboard.js cargado correctamente');
+    setupTabs();
+    console.log('Dashboard.js cargado correctamente');
     
     // Logout
     const logoutBtn = document.getElementById('logoutBtn');
@@ -169,6 +170,112 @@ async function sendMessage() {
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
     }
+}
+
+// ========================================
+// MANEJO DE TABS SUPERIORES
+// ========================================
+function setupTabs() {
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            switchView(tab.dataset.tab);
+        });
+    });
+}
+
+function switchView(view) {
+    const searchSection = document.querySelector('.search-section');
+    
+    if (view === 'chat') {
+        searchSection.style.display = 'block';
+        if (currentSessionId) {
+            loadSessionMessages(currentSessionId);
+        } else {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = getWelcomeHTML();
+            attachSuggestionListeners();
+        }
+    } else if (view === 'knowledge') {
+        searchSection.style.display = 'none';
+        loadKnowledgeView();
+    } else if (view === 'sources') {
+        searchSection.style.display = 'none';
+        loadSourcesView();
+    }
+}
+
+// ========================================
+// VISTA: BASE DE CONOCIMIENTOS
+// ========================================
+async function loadKnowledgeView() {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = `
+        <div class="loading-indicator">
+            <div class="loading-dots"><span></span><span></span><span></span></div>
+            <span>Cargando base de conocimientos...</span>
+        </div>
+    `;
+    
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/knowledge', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al cargar conocimientos');
+        }
+        
+        const data = await response.json();
+        
+        if (data.sections.length === 0) {
+            messagesDiv.innerHTML = `
+                <div class="empty-view">
+                    <h2 class="view-title">Base de conocimientos vacía</h2>
+                    <p class="view-subtitle">Agrega documentos en backend/knowledge/ para indexarlos.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        messagesDiv.innerHTML = `
+            <div class="knowledge-view">
+                <div class="view-header">
+                    <h2 class="view-title">Base de conocimientos</h2>
+                    <p class="view-subtitle">
+                        ${data.total_sections} secciones indexadas en ChromaDB
+                        (colección: <code>${data.vector_collection}</code>)
+                    </p>
+                </div>
+                <div class="knowledge-grid">
+                    ${data.sections.map(section => `
+                        <div class="knowledge-card">
+                            <h3 class="knowledge-card-title">${section.title}</h3>
+                            <p class="knowledge-card-content">${section.content.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error('Error cargando conocimientos:', error);
+        messagesDiv.innerHTML = `
+            <div class="error-bubble">No se pudo cargar la base de conocimientos.</div>
+        `;
+    }
+}
+
+// Placeholder para el Paso 4
+function loadSourcesView() {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = `
+        <div class="empty-view">
+            <h2 class="view-title">Fuentes consultadas</h2>
+            <p class="view-subtitle">Disponible en el próximo paso.</p>
+        </div>
+    `;
 }
 
 function attachSuggestionListeners() {
