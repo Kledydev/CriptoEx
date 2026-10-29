@@ -427,8 +427,9 @@ body.dashboard-body {
 }
 
 .search-icon {
-    font-size: 1.1rem;
-    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    color: #999;
 }
 
 .search-bar input {
@@ -474,6 +475,44 @@ body.dashboard-body {
     text-align: center;
 }
 
+/* ========================================
+   BOTÓN ELIMINAR SESIÓN (SVG minimalista)
+   ======================================== */
+.session-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.delete-session-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #999;
+    opacity: 0;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.sidebar-item:hover .delete-session-btn {
+    opacity: 1;
+}
+
+.delete-session-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.delete-session-btn svg {
+    display: block;
+}
 /* ========================================
    RESPONSIVE
    ======================================== */

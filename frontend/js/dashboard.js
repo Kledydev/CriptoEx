@@ -82,7 +82,7 @@ async function sendMessage() {
     const message = input ? input.value.trim() : '';
     
     if (!message) {
-        console.log('⚠️ Mensaje vacío');
+        console.log('Mensaje vacío');
         return;
     }
     
@@ -94,7 +94,7 @@ async function sendMessage() {
     
     const messagesDiv = document.getElementById('messages');
     if (!messagesDiv) {
-        console.error('❌ No se encontró el contenedor de mensajes');
+        console.error(' No se encontró el contenedor de mensajes');
         isProcessing = false;
         return;
     }
@@ -132,7 +132,7 @@ async function sendMessage() {
         
         if (response.ok) {
             const data = await response.json();
-            console.log('✅ Datos:', data);
+            console.log(' Datos:', data);
             
             currentSessionId = data.session_id;
             appendMessage('assistant', data.response);
@@ -141,7 +141,7 @@ async function sendMessage() {
             let errorMessage = 'No se pudo obtener respuesta';
             try {
                 const errorData = await response.json();
-                console.error('❌ Error del servidor:', errorData);
+                console.error('Error del servidor:', errorData);
                 
                 if (typeof errorData.detail === 'string') {
                     errorMessage = errorData.detail;
@@ -156,7 +156,7 @@ async function sendMessage() {
             appendError(errorMessage);
         }
     } catch (error) {
-        console.error('❌ Error de conexión:', error);
+        console.error(' Error de conexión:', error);
         removeLoading(loadingId);
         appendError('Error de conexión con el servidor');
     } finally {
@@ -175,7 +175,7 @@ function attachSuggestionListeners() {
     document.querySelectorAll('.suggestion-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             const msg = chip.dataset.msg;
-            console.log('💡 Sugerencia clickeada:', msg);
+            console.log(' Sugerencia clickeada:', msg);
             const input = document.getElementById('searchInput');
             if (input) {
                 input.value = msg;
@@ -291,7 +291,14 @@ async function loadSessions() {
             sessionsList.innerHTML = sessions.map(session => `
                 <div class="sidebar-item ${session.id === currentSessionId ? 'active' : ''}" 
                      data-id="${session.id}">
-                    <span>${session.title || 'Sin título'}</span>
+                    <span class="session-title">${session.title || 'Sin título'}</span>
+                    <button class="delete-session-btn" data-id="${session.id}" title="Eliminar sesión" aria-label="Eliminar sesión">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
                 </div>
             `).join('');
             
@@ -303,9 +310,54 @@ async function loadSessions() {
                     item.classList.add('active');
                 });
             });
+            
+            document.querySelectorAll('.delete-session-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const sessionId = btn.dataset.id;
+                    
+                    if (confirm('¿Eliminar esta sesión? Esta acción no se puede deshacer.')) {
+                        await deleteSession(sessionId);
+                    }
+                });
+            });
         }
     } catch (error) {
         console.error('Error cargando sesiones:', error);
+    }
+}
+
+// Nueva función: Eliminar sesión
+async function deleteSession(sessionId) {
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`/api/sessions/${sessionId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            console.log('Sesión eliminada:', sessionId);
+            
+            // Si era la sesión activa, limpiar el chat
+            if (currentSessionId === sessionId) {
+                currentSessionId = null;
+                const messagesDiv = document.getElementById('messages');
+                if (messagesDiv) {
+                    messagesDiv.innerHTML = getWelcomeHTML();
+                    attachSuggestionListeners();
+                }
+            }
+            
+            // Recargar lista de sesiones
+            loadSessions();
+        } else {
+            console.error('Error eliminando sesión:', response.status);
+            alert('No se pudo eliminar la sesión');
+        }
+    } catch (error) {
+        console.error('Error eliminando sesión:', error);
+        alert('Error de conexión al eliminar la sesión');
     }
 }
 
@@ -354,26 +406,7 @@ document.querySelectorAll('.delete-session-btn').forEach(btn => {
     });
 });
 
-async function deleteSession(sessionId) {
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/sessions/${sessionId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.ok) {
-            if (currentSessionId === sessionId) {
-                currentSessionId = null;
-                document.getElementById('messages').innerHTML = getWelcomeHTML();
-                attachSuggestionListeners();
-            }
-            loadSessions();
-        }
-    } catch (error) {
-        console.error('Error eliminando sesión:', error);
-    }
-}
+
 
 // En setupEventListeners():
 document.querySelectorAll('.sidebar-item .collection-dot').forEach(dot => {
